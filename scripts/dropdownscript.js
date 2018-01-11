@@ -57,6 +57,7 @@ var states = [ "All States",
 
 var viewModel = function(states){
     this.stateList = ko.observableArray(states);
-    this.selectedState = ko.observable();
+    this.selectedState = ko.observable("All States");
+    showStateParks(this.selectedState);
 };    
 ko.applyBindings(viewModel(states));

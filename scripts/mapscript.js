@@ -1,4 +1,5 @@
       var map;
+      var geocoder;
 
       // Create a new blank array for all the listing markers.
       var markers = [];
@@ -75,20 +76,58 @@
         // Constructor creates a new map - only center and zoom are required.
         map = new google.maps.Map(document.getElementById('map'), {
           center: {lat: 39.8283, lng: -98.5795},
-          zoom: 5,
+          zoom: 4,
           styles: styles,
           mapTypeControl: false
         });
-
+        geocoder = new google.maps.Geocoder();
         // These are the real estate listings that will be shown to the user.
         // Normally we'd have these in a database instead.
         var locations = [
-          {title: 'Yellowstone National Park NORMA IS HOT', location: {lat: 44.4280, lng: -110.5885}},
-          {title: 'Crater Lake', location: {lat: 42.9446, lng: -122.1090}},
-          {title: 'Grand Canyon National Park', location: {lat: 36.1070, lng: -112.1130}},
-          {title: 'Yosemite National Park', location: {lat: 37.8651, lng: -119.5383}},
-          {title: 'Great Smoky Mountains National Park', location: {lat: 35.6118, lng: -83.4895}},
-          {title: 'Niagara Falls', location: {lat: 43.0962, lng: -79.0377}}
+          {title: 'Yellowstone National Park', location: {lat: 44.4280, lng: -110.5885}, state: "WY"},
+          {title: 'Crater Lake', location: {lat: 42.9446, lng: -122.1090}, state: "OR"},
+          {title: 'Grand Canyon National Park', location: {lat: 36.1070, lng: -112.1130}, state: "AZ"},
+          {title: 'Yosemite National Park', location: {lat: 37.8651, lng: -119.5383}, state: "CA"},
+          {title: 'Great Smoky Mountains National Park', location: {lat: 35.6118, lng: -83.4895}, state: "TN"},
+          {title: 'Niagara Falls', location: {lat: 43.0962, lng: -79.0377}, state: "NY"},
+          {title: 'Rothrock State Forest', location: { lat:40.720585 , lng: -77.826965 }, state: 'PA'},
+          {title: 'Zion National Park', location: { lat:37.317207 , lng: -113.022537 }, state: 'UT'},
+          {title: 'Stanislaus National Forest', location: { lat:38.235195 , lng: -120.066483 }, state: 'CA'},
+          {title: 'Malibu Creek State Park', location: { lat:34.105156 , lng: -118.731316 }, state: 'CA'},
+          {title: 'Manti-La Sal National Forest', location: { lat:39.18705 , lng: -111.37989 }, state: 'UT'},
+          {title: 'Cherry Creek State Park', location: { lat:39.639973 , lng: -104.831863 }, state: 'CO'},
+          {title: 'Kissimmee Prairie Preserve State Park', location: { lat:27.612417 , lng: -81.053383 }, state: 'FL'},
+          {title: 'Garden of Gods', location: { lat:38.87384 , lng: -104.886665 }, state: 'CO'},
+          {title: 'Fort Berthold Indian Reservation', location: { lat:47.68388 , lng: -102.354126 }, state: 'ND'},
+          {title: 'Chattahoochee National Forest', location: { lat:34.765972 , lng: -84.143517 }, state: 'GA'},
+          {title: 'Little Sandy National Wildlife Refuge', location: { lat:32.590797 , lng: -95.273666 }, state: 'TX'},
+          {title: 'Siuslaw National Forest', location: { lat:44.358715 , lng: -123.829994 }, state: 'OR'},
+          {title: 'Kings Canyon National Park', location: { lat:36.887856 , lng: -118.555145 }, state: 'CA'},
+          {title: 'Ruffner Mountain Nature Center', location: { lat:33.55899 , lng: -86.707016 }, state: 'AL'},
+          {title: 'Kings Mountain State Park', location: { lat:35.130459 , lng: -81.345444 }, state: 'SC'},
+          {title: 'North Maine Woods', location: { lat:46.867702 , lng: -69.480286 }, state: 'ME'},
+          {title: 'Honolulu Watershed Forest Preserve', location: { lat:21.363251 , lng: -157.781265 }, state: 'HI'},
+          {title: 'Oleta River State Park', location: { lat:25.921614 , lng: -80.144402 }, state: 'FL'},
+          {title: 'Grant Park', location: { lat:41.876465 , lng: -87.621887 }, state: 'IL'},
+          {title: 'Bridge Creek Wildlife Area', location: { lat:45.043449 , lng: -118.949318 }, state: 'OR'},
+          {title: 'Willamette National Forest', location: { lat:44.060471 , lng: -122.091736 }, state: 'OR'},
+          {title: 'Golden Gate Canyon State Park', location: { lat:39.814339 , lng: -105.395622 }, state: 'CA'},
+          {title: 'William F Hayden Green Mountain Park', location: { lat:39.702827 , lng: -105.175636 }, state: 'CO'},
+          {title: 'Lantz Farm and Nature Preserve', location: { lat:39.516754 , lng: -80.649948 }, state: 'WV'},
+          {title: 'Myakka State Forest', location: { lat:26.988386 , lng: -82.286552 }, state: 'FL'},
+          {title: 'Lake Eola Park', location: { lat:28.545021 , lng: -81.372856 }, state: 'FL'},
+          {title: 'Gulf State Park', location: { lat:30.262793 , lng: -87.636337 }, state: 'AL'},
+          {title: 'Kennesaw Mountain National Battlefield Park', location: { lat:33.976376 , lng: -84.579163 }, state: 'GA'},
+          {title: 'Shenandoah National Park', location: { lat:38.700516 , lng: -78.292694 }, state: 'VA'},
+          {title: 'Ricketts Glen State Park', location: { lat:41.339184 , lng: -76.290436 }, state: 'PA'},
+          {title: 'El Dorado State Park', location: { lat:37.866047 , lng: -96.756935 }, state: 'KS'},
+          {title: 'Polihale State Park', location: { lat:22.079357 , lng: -159.761642 }, state: 'HI'},
+          {title: 'Lake Wateree State Recreation Area', location: { lat:34.375179 , lng: -80.863495 }, state: 'NC'},
+          {title: 'Kekaha Kai State Park', location: { lat:19.788027 , lng: -156.023453 }, state: 'HI'},
+          {title: 'National Bison Range', location: { lat:47.342545 , lng: -114.209747 }, state: 'MT'},
+          {title: 'Hillman State Park', location: { lat:40.453739 , lng: -80.400864 }, state: 'PA'},
+          {title: 'Little Big Econ State Forest', location: { lat:28.673721 , lng: -81.104507 }, state: 'FL'},
+          {title: 'Mount Mitchell State Park', location: { lat:35.768803 , lng: -82.306137 }, state: 'NC'} 
         ];
 
         var largeInfowindow = new google.maps.InfoWindow();
@@ -105,10 +144,12 @@
           // Get the position from the location array.
           var position = locations[i].location;
           var title = locations[i].title;
+          var state = locations[i].state;
           // Create a marker per location, and put into markers array.
           var marker = new google.maps.Marker({
             position: position,
             title: title,
+            state: state,
             animation: google.maps.Animation.DROP,
             icon: defaultIcon,
             id: i
@@ -131,21 +172,60 @@
 
         document.getElementById('show-listings').addEventListener('click', showListings);
         document.getElementById('hide-listings').addEventListener('click', hideListings);
+
       }
 
       // This function populates the infowindow when the marker is clicked. We'll only allow
       // one infowindow which will open at the marker that is clicked, and populate based
       // on that markers position.
+      function resetPanoView(){
+        pano=document.getElementById("panoview");
+        pano.innerHTML = null;
+        pano.style.cssText = null; 
+      }
       function populateInfoWindow(marker, infowindow) {
+        //reset
+        resetPanoView();
         // Check to make sure the infowindow is not already opened on this marker.
         if (infowindow.marker != marker) {
+          // Clear the infowindow content to give the streetview time to load.
+          infowindow.setContent('');
           infowindow.marker = marker;
-          infowindow.setContent('<div>' + marker.title + '</div>');
-          infowindow.open(map, marker);
           // Make sure the marker property is cleared if the infowindow is closed.
           infowindow.addListener('closeclick', function() {
             infowindow.marker = null;
           });
+          var streetViewService = new google.maps.StreetViewService();
+          var radius = 50;
+          // In case the status is OK, which means the pano was found, compute the
+          // position of the streetview image, then calculate the heading, then get a
+          // panorama from that and set the options
+          function getStreetView(data, status) {
+            if (status == google.maps.StreetViewStatus.OK) {
+              var nearStreetViewLocation = data.location.latLng;
+              var heading = google.maps.geometry.spherical.computeHeading(
+                nearStreetViewLocation, marker.position);
+                infowindow.setContent('<div>' + marker.title + '</div>');
+                ViewModel(marker.title);
+                var panoramaOptions = {
+                  position: nearStreetViewLocation,
+                  pov: {
+                    heading: heading,
+                    pitch: 30
+                  }
+                };
+              var panorama = new google.maps.StreetViewPanorama(
+                document.getElementById("panoview"), panoramaOptions);
+            } else {
+              infowindow.setContent('<div>' + marker.title + '</div>' +
+                '<div>No Street View Found</div>');
+            }
+          }
+          // Use streetview service to get the closest streetview image within
+          // 50 meters of the markers position
+          streetViewService.getPanoramaByLocation(marker.position, radius, getStreetView);
+          // Open the infowindow on the correct marker.
+          infowindow.open(map, marker);
         }
       }
 
@@ -158,12 +238,43 @@
           bounds.extend(markers[i].position);
         }
         map.fitBounds(bounds);
+        resetPanoView();
       }
 
       // This function will loop through the listings and hide them all.
       function hideListings() {
         for (var i = 0; i < markers.length; i++) {
           markers[i].setMap(null);
+        }
+        resetPanoView();
+      }
+
+      // This function will loop through the listings and show parks in certain state.
+      function showStateParks(state) {
+        if (state == "All States"){
+          showListings();
+        } else {
+        var statelocation = null;
+        hideListings();
+        geostring = state + ", US"; 
+        //Find the location for the state
+        geocoder.geocode({'address': geostring}, function(results, status) {
+          if (status === 'OK') {
+            statelocation = results[0].geometry.location;
+            var statebounds = new google.maps.LatLngBounds(statelocation);
+            for (var i = 0; i < markers.length; i++) {
+              if (markers[i].state == state)  {
+                markers[i].setMap(map); 
+              } 
+            }
+            //statebounds.extend(statelocation); 
+            //map.setCenter(statelocation);
+            map.fitBounds(statebounds);
+            map.setZoom(6);
+          } else {
+              alert('Geocode Error Status: ' + status);
+            }
+          });
         }
       }
 
@@ -180,3 +291,71 @@
           new google.maps.Size(21,34));
         return markerImage;
       }
+      
+var states = [ "All States",
+                      "AK",
+                      "AL",
+                      "AR",
+                      "AS",
+                      "AZ",
+                      "CA",
+                      "CO",
+                      "CT",
+                      "DC",
+                      "DE",
+                      "FL",
+                      "GA",
+                      "GU",
+                      "HI",
+                      "IA",
+                      "ID",
+                      "IL",
+                      "IN",
+                      "KS",
+                      "KY",
+                      "LA",
+                      "MA",
+                      "MD",
+                      "ME",
+                      "MI",
+                      "MN",
+                      "MO",
+                      "MS",
+                      "MT",
+                      "NC",
+                      "ND",
+                      "NE",
+                      "NH",
+                      "NJ",
+                      "NM",
+                      "NV",
+                      "NY",
+                      "OH",
+                      "OK",
+                      "OR",
+                      "PA",
+                      "PR",
+                      "RI",
+                      "SC",
+                      "SD",
+                      "TN",
+                      "TX",
+                      "UT",
+                      "VA",
+                      "VI",
+                      "VT",
+                      "WA",
+                      "WI",
+                      "WV",
+                      "WY"];
+ 
+
+var ViewModel = function(parkname){
+    this.stateList = ko.observableArray(states);
+    this.selectedState = ko.observable("All States");
+    this.selectedState.subscribe(function(newstate) {
+        //IMPORTANT: function parameter should be newstate+"", or its value includes "Object Event"
+        showStateParks(newstate+"");
+    }, this);
+};    
+ko.applyBindings(new ViewModel("Park"));
