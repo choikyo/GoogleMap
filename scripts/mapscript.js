@@ -1,7 +1,7 @@
       var map;
       var geocoder;
 
-      // Create a new blank array for all the listing markers.
+      // Create a new blank array for all the parks markers.
       var markers = [];
 
       function initMap() {
@@ -81,7 +81,7 @@
           mapTypeControl: false
         });
         geocoder = new google.maps.Geocoder();
-        // These are the real estate listings that will be shown to the user.
+        // These are the real estate parks that will be shown to the user.
         // Normally we'd have these in a database instead.
         var locations = [
           {title: 'Yellowstone National Park', location: {lat: 44.4280, lng: -110.5885}, state: "WY"},
@@ -132,7 +132,7 @@
 
         var largeInfowindow = new google.maps.InfoWindow();
 
-        // Style the markers a bit. This will be our listing marker icon.
+        // Style the markers a bit. This will be our parks marker icon.
         var defaultIcon = makeMarkerIcon('0091ff');
 
         // Create a "highlighted location" marker color for when the user
@@ -170,19 +170,44 @@
           });
         }
 
-        document.getElementById('show-listings').addEventListener('click', showListings);
-        document.getElementById('hide-listings').addEventListener('click', hideListings);
+        document.getElementById('show-all-parks').addEventListener('click', showAllParks);
+        document.getElementById('hide-parks').addEventListener('click', hideParks);
 
       }
+      //Ajax call to OpenWeatherMap
+      function getWeather(position){
+        var cords = (position+"").split(", ");
+        var lat = cords[0].replace("(", "");
+        var lng = cords[1].replace(")", "");
+        var data;
+        url = "http://api.openweathermap.org/data/2.5/weather?APPID=b36dbbebc9c8e656a80fb8c68f6ec353&" +
+        "lat=" + lat + "&" + "lon=" + lng;
+        
+         $.ajax({
+            url: url,
+            type: "GET",
+            dataType: 'json',
+            data : data,
+            success: function(data){
+              //Temperature unit is Kelvin, needs to convert to F or C
+              //F = 9/5 (K - 273) + 32
+              //C = K - 273              
+              temp = Math.round(data.main.temp-273)*9/5+32;
+              weather = data.weather[0].main;
+              $("#weather-info").text("Weather: " + weather);
+              $("#temperature-info").text("Temperature: " + temp + "F");
+            }
+          });
+      }
 
+      //This function resets panorama display area
+      function resetPanoView(){
+        $("#panoview").text('');
+        $("#panoview").removeAttr("style"); 
+      }
       // This function populates the infowindow when the marker is clicked. We'll only allow
       // one infowindow which will open at the marker that is clicked, and populate based
       // on that markers position.
-      function resetPanoView(){
-        pano=document.getElementById("panoview");
-        pano.innerHTML = null;
-        pano.style.cssText = null; 
-      }
       function populateInfoWindow(marker, infowindow) {
         //reset
         resetPanoView();
@@ -205,7 +230,9 @@
               var nearStreetViewLocation = data.location.latLng;
               var heading = google.maps.geometry.spherical.computeHeading(
                 nearStreetViewLocation, marker.position);
-                infowindow.setContent('<div>' + marker.title + '</div>');
+                infowindow.setContent('<div>' + marker.title + '</div>' +
+                                      '<div id="weather-info"></div>' +
+                                      '<div id="temperature-info"></div>');
                 ViewModel(marker.title);
                 var panoramaOptions = {
                   position: nearStreetViewLocation,
@@ -214,11 +241,14 @@
                     pitch: 30
                   }
                 };
+                 
               var panorama = new google.maps.StreetViewPanorama(
                 document.getElementById("panoview"), panoramaOptions);
             } else {
               infowindow.setContent('<div>' + marker.title + '</div>' +
-                '<div>No Street View Found</div>');
+                '<div>No Street View Found</div>' +
+                '<div id="weather-info"></div>' +
+                '<div id="temperature-info"></div>');
             }
           }
           // Use streetview service to get the closest streetview image within
@@ -226,11 +256,13 @@
           streetViewService.getPanoramaByLocation(marker.position, radius, getStreetView);
           // Open the infowindow on the correct marker.
           infowindow.open(map, marker);
+          // Get park weather
+          weatherData = getWeather(marker.position);
         }
       }
-
+      
       // This function will loop through the markers array and display them all.
-      function showListings() {
+      function showAllParks() {
         var bounds = new google.maps.LatLngBounds();
         // Extend the boundaries of the map for each marker and display the marker
         for (var i = 0; i < markers.length; i++) {
@@ -241,21 +273,21 @@
         resetPanoView();
       }
 
-      // This function will loop through the listings and hide them all.
-      function hideListings() {
+      // This function will loop through the parks and hide them all.
+      function hideParks() {
         for (var i = 0; i < markers.length; i++) {
           markers[i].setMap(null);
         }
         resetPanoView();
       }
 
-      // This function will loop through the listings and show parks in certain state.
+      // This function will loop through the parks and show parks in certain state.
       function showStateParks(state) {
         if (state == "All States"){
-          showListings();
+          showAllParks();
         } else {
         var statelocation = null;
-        hideListings();
+        hideParks();
         geostring = state + ", US"; 
         //Find the location for the state
         geocoder.geocode({'address': geostring}, function(results, status) {

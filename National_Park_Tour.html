@@ -70,10 +70,11 @@
           Search in state:  <select id="statelist" data-bind="options: stateList, value: selectedState"></select>
         </div>
         <div>
-          <input id="show-listings" type="button" value="Show All Parks">
-          <input id="hide-listings" type="button" value="Remove Marks">
-        </div> 
+          <input id="show-all-parks" type="button" value="Show All Parks">
+          <input id="hide-parks" type="button" value="Hide Parks">
+        </div>
         <div id="panoview" ></div>
+        
       </div>
       <div id="map"></div>
     </div>
@@ -82,7 +83,6 @@
         src=
         "https://maps.googleapis.com/maps/api/js?libraries=geometry&key=AIzaSyDZFr-SoQu9I_u6Tu54ktxtztQMae81F4M&v=3&callback=initMap">
     </script>
-    
-    
+    <script src="jquery\jquery-3.2.1.min.js"></script>
   </body>
 </html>
