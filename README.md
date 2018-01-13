@@ -14,3 +14,6 @@ The above command downloads the project into GoogleMap folder
 - Dropdown List to select parks in specific state, map zoom into state level
 - Click a marker to see stree view
 - Click a marker to see current weather and temperature 
+
+# Run
+Open the file "Traveler_To-do_List.html" in a web browser
