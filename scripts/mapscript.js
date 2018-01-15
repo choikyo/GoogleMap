@@ -173,9 +173,8 @@
         for (var i = 0; i < locations.length; i++) {
           createMarkers(i);
         }
-
-        document.getElementById('show-all-parks').addEventListener('click', showAllParks);
-        document.getElementById('hide-parks').addEventListener('click', hideParks);
+        showAllParks();
+        
 
       }
       
@@ -185,24 +184,31 @@
         var lat = cords[0].replace("(", "");
         var lng = cords[1].replace(")", "");
         var data;
+        var weatherstr;
         url = "http://api.openweathermap.org/data/2.5/weather?APPID=b36dbbebc9c8e656a80fb8c68f6ec353&" +
         "lat=" + lat + "&" + "lon=" + lng;
         
-         $.ajax({
+        $.ajax({
             url: url,
             type: "GET",
             dataType: 'json',
             data : data,
+            //Keep async false to return correct Weather API result
+            async: false,
             success: function(data){
-              //Temperature unit is Kelvin, needs to convert to F or C
-              //F = 9/5 (K - 273) + 32
-              //C = K - 273              
-              temp = Math.round(data.main.temp-273)*9/5+32;
-              weather = data.weather[0].main;
-              $("#weather-info").text("Weather: " + weather);
-              $("#temperature-info").text("Temperature: " + temp + "F");
+            //Temperature unit is Kelvin, needs to convert to F or C
+            //F = 9/5 (K - 273) + 32
+            //C = K - 273              
+            temp = Math.round(data.main.temp-273)*9/5+32;
+            weather = data.weather[0].main;
+            weatherstr = '<div id="weather-info">Weather: ' + weather + '</div>' +
+               '<div id="temperature-info">Temperature: ' + temp + '</div>';
+            },
+            error: function(){
+              weatherstr = "Weather Information is not available";
             }
           });
+        return weatherstr;
       }
 
       //This function resets panorama display area
@@ -232,13 +238,13 @@
           // position of the streetview image, then calculate the heading, then get a
           // panorama from that and set the options
           getStreetView = function(data, status) {
+            var weatherData = getWeather(marker.position);
             if (status == google.maps.StreetViewStatus.OK) {
               var nearStreetViewLocation = data.location.latLng;
               var heading = google.maps.geometry.spherical.computeHeading(
                 nearStreetViewLocation, marker.position);
                 infowindow.setContent('<div>' + marker.title + '</div>' +
-                                      '<div id="weather-info"></div>' +
-                                      '<div id="temperature-info"></div>');
+                                      weatherData);
                 ViewModel(marker.title);
                 var panoramaOptions = {
                   position: nearStreetViewLocation,
@@ -253,8 +259,7 @@
             } else {
               infowindow.setContent('<div>' + marker.title + '</div>' +
                 '<div>No Street View Found</div>' +
-                '<div id="weather-info"></div>' +
-                '<div id="temperature-info"></div>');
+                weatherData);
             }
           };
           // Use streetview service to get the closest streetview image within
@@ -262,8 +267,8 @@
           streetViewService.getPanoramaByLocation(marker.position, radius, getStreetView);
           // Open the infowindow on the correct marker.
           infowindow.open(map, marker);
-          // Get park weather
-          weatherData = getWeather(marker.position);
+ 
+           
         }
       }
       
@@ -394,6 +399,8 @@ var ViewModel = function(){
     this.selectedState.subscribe(function(newstate) {
         //IMPORTANT: function parameter should be newstate+"", or its value includes "Object Event"
         showStateParks(newstate+"");
+    this.showAllParks = showAllParks();
+    this.hideParks = hideParks();
     }, this);
 };    
 ko.applyBindings(new ViewModel());
