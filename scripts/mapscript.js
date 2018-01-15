@@ -139,8 +139,7 @@
         // mouses over the marker.
         var highlightedIcon = makeMarkerIcon('FFFF24');
         
-        // The following group uses the location array to create an array of markers on initialize.
-        for (var i = 0; i < locations.length; i++) {
+        function createMarkers(i){
           // Get the position from the location array.
           var position = locations[i].location;
           var title = locations[i].title;
@@ -159,7 +158,7 @@
           // Create an onclick event to open the large infowindow at each marker.
           marker.addListener('click', function() {
             populateInfoWindow(this, largeInfowindow);
-          });
+            });
           // Two event listeners - one for mouseover, one for mouseout,
           // to change the colors back and forth.
           marker.addListener('mouseover', function() {
@@ -169,11 +168,17 @@
             this.setIcon(defaultIcon);
           });
         }
+        
+        // The following group uses the location array to create an array of markers on initialize.
+        for (var i = 0; i < locations.length; i++) {
+          createMarkers(i);
+        }
 
         document.getElementById('show-all-parks').addEventListener('click', showAllParks);
         document.getElementById('hide-parks').addEventListener('click', hideParks);
 
       }
+      
       //Ajax call to OpenWeatherMap
       function getWeather(position){
         var cords = (position+"").split(", ");
@@ -212,6 +217,7 @@
         //reset
         resetPanoView();
         // Check to make sure the infowindow is not already opened on this marker.
+        var getStreetView = function(){};
         if (infowindow.marker != marker) {
           // Clear the infowindow content to give the streetview time to load.
           infowindow.setContent('');
@@ -225,7 +231,7 @@
           // In case the status is OK, which means the pano was found, compute the
           // position of the streetview image, then calculate the heading, then get a
           // panorama from that and set the options
-          function getStreetView(data, status) {
+          getStreetView = function(data, status) {
             if (status == google.maps.StreetViewStatus.OK) {
               var nearStreetViewLocation = data.location.latLng;
               var heading = google.maps.geometry.spherical.computeHeading(
@@ -250,7 +256,7 @@
                 '<div id="weather-info"></div>' +
                 '<div id="temperature-info"></div>');
             }
-          }
+          };
           // Use streetview service to get the closest streetview image within
           // 50 meters of the markers position
           streetViewService.getPanoramaByLocation(marker.position, radius, getStreetView);
@@ -382,7 +388,7 @@ var states = [ "All States",
                       "WY"];
  
 
-var ViewModel = function(parkname){
+var ViewModel = function(){
     this.stateList = ko.observableArray(states);
     this.selectedState = ko.observable("All States");
     this.selectedState.subscribe(function(newstate) {
@@ -390,4 +396,4 @@ var ViewModel = function(parkname){
         showStateParks(newstate+"");
     }, this);
 };    
-ko.applyBindings(new ViewModel("Park"));
+ko.applyBindings(new ViewModel());
