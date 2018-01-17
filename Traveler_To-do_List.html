@@ -5,29 +5,32 @@
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <link rel="stylesheet" href="css/style.css">
     <title>Traveler To-do List</title>
-    <script src="knockout.js\knockout-3.4.2.js"></script>
-    <script src="jquery\jquery-3.2.1.min.js"></script>
   </head>
   <body>
     <div class="container">
       <div class="options-box">
         <h1>Traveller To-do List</h1>
         <div>
-          Search in state:  <select id="statelist" data-bind="options: stateList, value: selectedState"></select>
+          Search in state:
+          <select id="statelist" data-bind="options: stateList, value: selectedState"></select>
         </div>
         <div>
           <input id="show-all-parks" type="button" value="Show All Parks" data-bind="click: showAllParks">
           <input id="hide-parks" type="button" value="Hide Parks" data-bind="click: hideParks">
         </div>
+        <div id="places">
+          <select  data-bind="options: locationNames, value: selectedLocation"  id="place-list" ></select>            
+        </div>
         <div id="panoview" ></div>
-        
       </div>
       <div id="map"></div>
     </div>
+    <script src="knockout.js\knockout-3.4.2.js"></script>
+    <script src="jquery\jquery-3.2.1.min.js"></script>
     <script src="scripts\mapscript.js"></script>
     <script async defer
         src=
         "https://maps.googleapis.com/maps/api/js?libraries=geometry&key=AIzaSyDZFr-SoQu9I_u6Tu54ktxtztQMae81F4M&v=3&callback=initMap">
-    </script>
+    </script>    
   </body>
 </html>
