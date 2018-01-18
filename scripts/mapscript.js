@@ -1,10 +1,11 @@
       var map;
       var geocoder;
       var filteredlocations = [];
-
       // Create a new blank array for all the parks markers.
       var markers = [];
-
+      var displaymarkers = [];
+      var selectedmarker = null;
+      
       function initMap() {
         // Create a styles array to use with the map.
         var styles = [
@@ -113,8 +114,9 @@
           markers.push(marker);
           // Create an onclick event to open the large infowindow at each marker.
           marker.addListener('click', function() {
-            marker.setAnimation(google.maps.Animation.BOUNCE);
-            setTimeout(function(){ marker.setAnimation(null); }, 770);
+            closeInfowindow(selectedmarker);
+            selectedmarker = largeInfowindow;
+            setAnimation(marker);
             populateInfoWindow(this, largeInfowindow);
             });
           // Two event listeners - one for mouseover, one for mouseout,
@@ -128,12 +130,12 @@
         }
         
         // The following group uses the location array to create an array of markers on initialize.
+        displaymarkers = [];
         for (var i = 0; i < locations.length; i++) {
           createMarkers(i);
+          displaymarkers.push(markers[i]);
         }
-        showAllParks();
-        
-
+        showAllParks(); 
       }
       
       //Ajax call to OpenWeatherMap
@@ -277,7 +279,8 @@
         } else {
         var statelocation = null;
         hideParks();
-        geostring = state + ", US"; 
+        geostring = state + ", US";
+        displaymarkers = [];
         //Find the location for the state
         geocoder.geocode({'address': geostring}, function(results, status) {
           if (status === 'OK') {
@@ -285,7 +288,8 @@
             var statebounds = new google.maps.LatLngBounds(statelocation);
             for (var i = 0; i < markers.length; i++) {
               if (markers[i].state == state)  {
-                markers[i].setMap(map); 
+                markers[i].setMap(map);
+                displaymarkers.push(markers[i]);
               } 
             }
             //statebounds.extend(statelocation); 
@@ -417,12 +421,35 @@ var locations = [
           {title: 'Mount Mitchell State Park', location: { lat:35.768803 , lng: -82.306137 }, state: 'NC'} 
         ];
 
+function setAnimation(marker) {
+  marker.setAnimation(google.maps.Animation.BOUNCE);
+  setTimeout(function(){ marker.setAnimation(null); }, 770);
+}
 
+function closeInfowindow(infowindow){
+  if (infowindow!==null){
+    infowindow.close();
+    infowindow.marker = null;
+  }
+}
+
+function findMarker(markers, location){
+  closeInfowindow(selectedmarker);
+  for (var i = 0; i < markers.length; i++) {    
+    if (markers[i].title == location) {
+      var largeInfowindow = new google.maps.InfoWindow();
+      selectedmarker = largeInfowindow;
+      setAnimation(markers[i]);
+      populateInfoWindow(markers[i], largeInfowindow);
+    }
+  }
+}
 
 
 var ViewModel = function(){
     this.stateList = ko.observableArray(states);
     this.selectedState = ko.observable("All States");
+    this.selectedLocation = ko.observable();
     //Handle Filter Binding,
     //location dropdown list is bind with State dropdown list
     this.locationNames = ko.computed(function(){       
@@ -439,8 +466,7 @@ var ViewModel = function(){
     }, this);
     
     this.selectedLocation.subscribe(function(location) {        
-        //IMPORTANT: function parameter should be newstate+"", or its value includes "Object Event"
-        showStateParks(state+"");
+        findMarker(displaymarkers, (location+""));
     }, this);
     
 };    
