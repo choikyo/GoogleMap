@@ -167,27 +167,23 @@
                                   '<div id="weather-info">Weather: ' + weather + '</div>' +
                                   '<div id="temperature-info">Temperature: ' + temp + 'F </div>'
                                   );
+            panorama.setVisible(true);
             },
             error: function(){
               infowindow.setContent('<div>' + marker.title + '</div>' +
                                     streeviewstring +
                                     'Weather Info Not Available'
                                   );
+            panorama.setVisible(false);
             }
           });
       }
 
-      //This function resets panorama display area
-      function resetPanoView(){
-        $("#panoview").text('');
-        $("#panoview").removeAttr("style"); 
-      }
+       
       // This function populates the infowindow when the marker is clicked. We'll only allow
       // one infowindow which will open at the marker that is clicked, and populate based
       // on that markers position.
-      function populateInfoWindow(marker, infowindow) {
-        //reset
-        resetPanoView();
+      function populateInfoWindow(marker, infowindow) { 
         // Check to make sure the infowindow is not already opened on this marker.
         var getStreetView = function(){};
         if (infowindow.marker != marker) {
@@ -212,7 +208,7 @@
                 nearStreetViewLocation, marker.position);
                 //infowindow.setContent('<div>' + marker.title + '</div>' +
                 //                      weatherData);
-                getWeather(infowindow,"", marker);
+                
                 ViewModel(marker.title);
                 var panoramaOptions = {
                   position: nearStreetViewLocation,
@@ -222,9 +218,12 @@
                   }
                 };
                  
-              var panorama = new google.maps.StreetViewPanorama(
+               panorama = new google.maps.StreetViewPanorama(
                 document.getElementById("panoview"), panoramaOptions);
+              getWeather(infowindow,"", marker);
             } else {
+              panorama = new google.maps.StreetViewPanorama(
+                document.getElementById("panoview"), null);
               getWeather(infowindow,"<div>No Street View Found</div>",marker);
             }
           };
@@ -247,7 +246,7 @@
           bounds.extend(markers[i].position);
         }
         map.fitBounds(bounds);
-        resetPanoView();
+        
       }
 
       // This function will loop through the parks and hide them all.
@@ -255,7 +254,7 @@
         for (var i = 0; i < markers.length; i++) {
           markers[i].setMap(null);
         }
-        resetPanoView();
+        
       }
        
       
