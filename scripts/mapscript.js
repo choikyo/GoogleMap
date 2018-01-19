@@ -1,320 +1,333 @@
-      var map;
-      var geocoder;
-      var filteredlocations = [];
-      // Create a new blank array for all the parks markers.
-      var markers = [];
-      var displaymarkers = [];
-      var selectedmarker = null;
-      
-      function initMap() {
-        // Create a styles array to use with the map.
-        var styles = [
-          {
-            featureType: 'water',
-            stylers: [
-              { color: '#19a0d8' }
-            ]
-          },{
-            featureType: 'administrative',
-            elementType: 'labels.text.stroke',
-            stylers: [
-              { color: '#ffffff' },
-              { weight: 6 }
-            ]
-          },{
-            featureType: 'administrative',
-            elementType: 'labels.text.fill',
-            stylers: [
-              { color: '#e85113' }
-            ]
-          },{
-            featureType: 'road.highway',
-            elementType: 'geometry.stroke',
-            stylers: [
-              { color: '#efe9e4' },
-              { lightness: -40 }
-            ]
-          },{
-            featureType: 'transit.station',
-            stylers: [
-              { weight: 9 },
-              { hue: '#e85113' }
-            ]
-          },{
-            featureType: 'road.highway',
-            elementType: 'labels.icon',
-            stylers: [
-              { visibility: 'off' }
-            ]
-          },{
-            featureType: 'water',
-            elementType: 'labels.text.stroke',
-            stylers: [
-              { lightness: 100 }
-            ]
-          },{
-            featureType: 'water',
-            elementType: 'labels.text.fill',
-            stylers: [
-              { lightness: -100 }
-            ]
-          },{
-            featureType: 'poi',
-            elementType: 'geometry',
-            stylers: [
-              { visibility: 'on' },
-              { color: '#f0e4d3' }
-            ]
-          },{
-            featureType: 'road.highway',
-            elementType: 'geometry.fill',
-            stylers: [
-              { color: '#efe9e4' },
-              { lightness: -25 }
-            ]
-          }
-        ];
+  var map;
+  var geocoder;
+  var filteredlocations = [];
+  // Create a new blank array for all the parks markers.
+  var markers = [];
+  var filteredmarkers = [];
+  var selectedmarker = null;
+  
+  function initMap() {
+    // Create a styles array to use with the map.
+    var styles = [
+      {
+        featureType: 'water',
+        stylers: [
+          { color: '#19a0d8' }
+        ]
+      },{
+        featureType: 'administrative',
+        elementType: 'labels.text.stroke',
+        stylers: [
+          { color: '#ffffff' },
+          { weight: 6 }
+        ]
+      },{
+        featureType: 'administrative',
+        elementType: 'labels.text.fill',
+        stylers: [
+          { color: '#e85113' }
+        ]
+      },{
+        featureType: 'road.highway',
+        elementType: 'geometry.stroke',
+        stylers: [
+          { color: '#efe9e4' },
+          { lightness: -40 }
+        ]
+      },{
+        featureType: 'transit.station',
+        stylers: [
+          { weight: 9 },
+          { hue: '#e85113' }
+        ]
+      },{
+        featureType: 'road.highway',
+        elementType: 'labels.icon',
+        stylers: [
+          { visibility: 'off' }
+        ]
+      },{
+        featureType: 'water',
+        elementType: 'labels.text.stroke',
+        stylers: [
+          { lightness: 100 }
+        ]
+      },{
+        featureType: 'water',
+        elementType: 'labels.text.fill',
+        stylers: [
+          { lightness: -100 }
+        ]
+      },{
+        featureType: 'poi',
+        elementType: 'geometry',
+        stylers: [
+          { visibility: 'on' },
+          { color: '#f0e4d3' }
+        ]
+      },{
+        featureType: 'road.highway',
+        elementType: 'geometry.fill',
+        stylers: [
+          { color: '#efe9e4' },
+          { lightness: -25 }
+        ]
+      }
+    ];
 
-        // Constructor creates a new map - only center and zoom are required.
-        map = new google.maps.Map(document.getElementById('map'), {
-          center: {lat: 39.8283, lng: -98.5795},
-          zoom: 4,
-          styles: styles,
-          mapTypeControl: false
+    // Constructor creates a new map - only center and zoom are required.
+    map = new google.maps.Map(document.getElementById('map'), {
+      center: {lat: 39.8283, lng: -98.5795},
+      zoom: 4,
+      styles: styles,
+      mapTypeControl: false
+    });
+    geocoder = new google.maps.Geocoder();
+    // These are the real estate parks that will be shown to the user.
+    // Normally we'd have these in a database instead.
+    
+
+    var largeInfowindow = new google.maps.InfoWindow();
+
+    // Style the markers a bit. This will be our parks marker icon.
+    var defaultIcon = makeMarkerIcon('0091ff');
+
+    // Create a "highlighted location" marker color for when the user
+    // mouses over the marker.
+    var highlightedIcon = makeMarkerIcon('FFFF24');
+    
+    function createMarkers(i){
+      // Get the position from the location array.
+      var position = locations[i].location;
+      var title = locations[i].title;
+      var state = locations[i].state;
+      // Create a marker per location, and put into markers array.
+      var marker = new google.maps.Marker({
+        position: position,
+        title: title,
+        state: state,
+        animation: google.maps.Animation.DROP,
+        icon: defaultIcon,
+        id: i
+      });
+      // Push the marker to our array of markers.
+      markers.push(marker);
+      // Create an onclick event to open the large infowindow at each marker.
+      marker.addListener('click', function() {
+        closeInfowindow(selectedmarker);
+        selectedmarker = largeInfowindow;
+        setAnimation(marker);
+        populateInfoWindow(this, largeInfowindow);
         });
-        geocoder = new google.maps.Geocoder();
-        // These are the real estate parks that will be shown to the user.
-        // Normally we'd have these in a database instead.
-        
-
-        var largeInfowindow = new google.maps.InfoWindow();
-
-        // Style the markers a bit. This will be our parks marker icon.
-        var defaultIcon = makeMarkerIcon('0091ff');
-
-        // Create a "highlighted location" marker color for when the user
-        // mouses over the marker.
-        var highlightedIcon = makeMarkerIcon('FFFF24');
-        
-        function createMarkers(i){
-          // Get the position from the location array.
-          var position = locations[i].location;
-          var title = locations[i].title;
-          var state = locations[i].state;
-          // Create a marker per location, and put into markers array.
-          var marker = new google.maps.Marker({
-            position: position,
-            title: title,
-            state: state,
-            animation: google.maps.Animation.DROP,
-            icon: defaultIcon,
-            id: i
-          });
-          // Push the marker to our array of markers.
-          markers.push(marker);
-          // Create an onclick event to open the large infowindow at each marker.
-          marker.addListener('click', function() {
-            closeInfowindow(selectedmarker);
-            selectedmarker = largeInfowindow;
-            setAnimation(marker);
-            populateInfoWindow(this, largeInfowindow);
-            });
-          // Two event listeners - one for mouseover, one for mouseout,
-          // to change the colors back and forth.
-          marker.addListener('mouseover', function() {
-            this.setIcon(highlightedIcon);
-          });
-          marker.addListener('mouseout', function() {
-            this.setIcon(defaultIcon);
-          });
+      // Two event listeners - one for mouseover, one for mouseout,
+      // to change the colors back and forth.
+      marker.addListener('mouseover', function() {
+        this.setIcon(highlightedIcon);
+      });
+      marker.addListener('mouseout', function() {
+        this.setIcon(defaultIcon);
+      });
+    }
+    
+    // The following group uses the location array to create an array of markers on initialize.
+    filteredmarkers = [];
+    for (var i = 0; i < locations.length; i++) {
+      createMarkers(i);
+      filteredmarkers.push(markers[i]);
+    }
+    showAllParks(); 
+  }
+  
+  //Ajax call to OpenWeatherMap
+  function getWeather(infowindow,streeviewstring, marker){
+    var position = marker.position;
+    var cords = (position+"").split(", ");
+    var lat = cords[0].replace("(", "");
+    var lng = cords[1].replace(")", "");
+    var data;
+    //var weatherstr;
+    url = "http://api.openweathermap.org/data/2.5/weather?APPID=b36dbbebc9c8e656a80fb8c68f6ec353&" +
+    "lat=" + lat + "&" + "lon=" + lng;
+    
+    $.ajax({
+        url: url,
+        type: "GET",
+        dataType: 'json',
+        data : data,
+        //Keep async false to return correct Weather API result
+        async: true,
+        success: function(data){
+        //Temperature unit is Kelvin, needs to convert to F or C
+        //F = 9/5 (K - 273) + 32
+        //C = K - 273
+        temp = ((data.main.temp-273)*9/5+32).toFixed(1);
+        weather = data.weather[0].main;
+        infowindow.setContent('<div>' + marker.title + '</div>' +
+                              streeviewstring +
+                              '<div id="weather-info">Weather: ' + weather + '</div>' +
+                              '<div id="temperature-info">Temperature: ' + temp + 'F </div>'
+                              );
+        panorama.setVisible(true);
+        },
+        error: function(){
+          infowindow.setContent('<div>' + marker.title + '</div>' +
+                                streeviewstring +
+                                'Weather Info Not Available'
+                              );
+        panorama.setVisible(false);
         }
-        
-        // The following group uses the location array to create an array of markers on initialize.
-        displaymarkers = [];
-        for (var i = 0; i < locations.length; i++) {
-          createMarkers(i);
-          displaymarkers.push(markers[i]);
-        }
-        showAllParks(); 
-      }
-      
-      //Ajax call to OpenWeatherMap
-      function getWeather(infowindow,streeviewstring, marker){
-        var position = marker.position;
-        var cords = (position+"").split(", ");
-        var lat = cords[0].replace("(", "");
-        var lng = cords[1].replace(")", "");
-        var data;
-        //var weatherstr;
-        url = "http://api.openweathermap.org/data/2.5/weather?APPID=b36dbbebc9c8e656a80fb8c68f6ec353&" +
-        "lat=" + lat + "&" + "lon=" + lng;
-        
-        $.ajax({
-            url: url,
-            type: "GET",
-            dataType: 'json',
-            data : data,
-            //Keep async false to return correct Weather API result
-            async: true,
-            success: function(data){
-            //Temperature unit is Kelvin, needs to convert to F or C
-            //F = 9/5 (K - 273) + 32
-            //C = K - 273
-            temp = ((data.main.temp-273)*9/5+32).toFixed(1);
-            weather = data.weather[0].main;
-            infowindow.setContent('<div>' + marker.title + '</div>' +
-                                  streeviewstring +
-                                  '<div id="weather-info">Weather: ' + weather + '</div>' +
-                                  '<div id="temperature-info">Temperature: ' + temp + 'F </div>'
-                                  );
-            panorama.setVisible(true);
-            },
-            error: function(){
-              infowindow.setContent('<div>' + marker.title + '</div>' +
-                                    streeviewstring +
-                                    'Weather Info Not Available'
-                                  );
-            panorama.setVisible(false);
-            }
-          });
-      }
+      });
+  }
 
+   
+  // This function populates the infowindow when the marker is clicked. We'll only allow
+  // one infowindow which will open at the marker that is clicked, and populate based
+  // on that markers position.
+  function populateInfoWindow(marker, infowindow) { 
+    // Check to make sure the infowindow is not already opened on this marker.
+    var getStreetView = function(){};
+    if (infowindow.marker != marker) {
+      // Clear the infowindow content to give the streetview time to load.
+      infowindow.setContent('');
+      infowindow.marker = marker;
+      // Make sure the marker property is cleared if the infowindow is closed.
+      infowindow.addListener('closeclick', function() {
+        infowindow.marker = null;
+      });
+      var streetViewService = new google.maps.StreetViewService();
+      var radius = 50;
+      // In case the status is OK, which means the pano was found, compute the
+      // position of the streetview image, then calculate the heading, then get a
+      // panorama from that and set the options
        
-      // This function populates the infowindow when the marker is clicked. We'll only allow
-      // one infowindow which will open at the marker that is clicked, and populate based
-      // on that markers position.
-      function populateInfoWindow(marker, infowindow) { 
-        // Check to make sure the infowindow is not already opened on this marker.
-        var getStreetView = function(){};
-        if (infowindow.marker != marker) {
-          // Clear the infowindow content to give the streetview time to load.
-          infowindow.setContent('');
-          infowindow.marker = marker;
-          // Make sure the marker property is cleared if the infowindow is closed.
-          infowindow.addListener('closeclick', function() {
-            infowindow.marker = null;
-          });
-          var streetViewService = new google.maps.StreetViewService();
-          var radius = 50;
-          // In case the status is OK, which means the pano was found, compute the
-          // position of the streetview image, then calculate the heading, then get a
-          // panorama from that and set the options
-           
-          getStreetView = function(data, status) {
-            //var weatherData = getWeather(marker.position);
-            if (status == google.maps.StreetViewStatus.OK) {
-              var nearStreetViewLocation = data.location.latLng;
-              var heading = google.maps.geometry.spherical.computeHeading(
-                nearStreetViewLocation, marker.position);
-                //infowindow.setContent('<div>' + marker.title + '</div>' +
-                //                      weatherData);
-                
-                ViewModel(marker.title);
-                var panoramaOptions = {
-                  position: nearStreetViewLocation,
-                  pov: {
-                    heading: heading,
-                    pitch: 30
-                  }
-                };
-                 
-               panorama = new google.maps.StreetViewPanorama(
-                document.getElementById("panoview"), panoramaOptions);
-              getWeather(infowindow,"", marker);
-            } else {
-              panorama = new google.maps.StreetViewPanorama(
-                document.getElementById("panoview"), null);
-              getWeather(infowindow,"<div>No Street View Found</div>",marker);
-            }
-          };
-          // Use streetview service to get the closest streetview image within
-          // 50 meters of the markers position
-          streetViewService.getPanoramaByLocation(marker.position, radius, getStreetView);
-          // Open the infowindow on the correct marker.
-          infowindow.open(map, marker);
- 
-           
-        }
-      }
-      
-      // This function will loop through the markers array and display them all.
-      function showAllParks() {
-        var bounds = new google.maps.LatLngBounds();
-        // Extend the boundaries of the map for each marker and display the marker
-        for (var i = 0; i < markers.length; i++) {
-          markers[i].setMap(map);
-          bounds.extend(markers[i].position);
-        }
-        map.fitBounds(bounds);
-        
-      }
-
-      // This function will loop through the parks and hide them all.
-      function hideParks() {
-        for (var i = 0; i < markers.length; i++) {
-          markers[i].setMap(null);
-        }
-        
-      }
-       
-      
-      function showLocationList(state) {
-        //alert(state);
-        filteredlocations = [];
-        for (var i = 0; i < locations.length; i++) {
-          if (state == "All States" || state == locations[i].state) {
-            //alert(locations[i].title);
-             filteredlocations.push(locations[i].title);
-          }   
-        }
-        
-        return (filteredlocations.length===0)?['No Travelling Park Available']:filteredlocations;
-      } 
-
-      // This function will loop through the parks and show parks in certain state.
-      function showStateParks(state) {
-        if (state == "All States"){
-          showAllParks();
+      getStreetView = function(data, status) {
+        //var weatherData = getWeather(marker.position);
+        if (status == google.maps.StreetViewStatus.OK) {
+          var nearStreetViewLocation = data.location.latLng;
+          var heading = google.maps.geometry.spherical.computeHeading(
+            nearStreetViewLocation, marker.position);
+            //infowindow.setContent('<div>' + marker.title + '</div>' +
+            //                      weatherData);
+            
+            ViewModel(marker.title);
+            var panoramaOptions = {
+              position: nearStreetViewLocation,
+              pov: {
+                heading: heading,
+                pitch: 30
+              }
+            };
+             
+           panorama = new google.maps.StreetViewPanorama(
+            document.getElementById("panoview"), panoramaOptions);
+          getWeather(infowindow,"", marker);
         } else {
-        var statelocation = null;
-        hideParks();
-        geostring = state + ", US";
-        displaymarkers = [];
-        //Find the location for the state
-        geocoder.geocode({'address': geostring}, function(results, status) {
-          if (status === 'OK') {
-            statelocation = results[0].geometry.location;
-            var statebounds = new google.maps.LatLngBounds(statelocation);
-            for (var i = 0; i < markers.length; i++) {
-              if (markers[i].state == state)  {
-                markers[i].setMap(map);
-                displaymarkers.push(markers[i]);
-              } 
-            }
-            //statebounds.extend(statelocation); 
-            //map.setCenter(statelocation);
-            map.fitBounds(statebounds);
-            map.setZoom(6);
-          } else {
-              alert('Geocode Error Status: ' + status);
-            }
-          });
+          panorama = new google.maps.StreetViewPanorama(
+            document.getElementById("panoview"), null);
+          getWeather(infowindow,"<div>No Street View Found</div>",marker);
         }
-      }
+      };
+      // Use streetview service to get the closest streetview image within
+      // 50 meters of the markers position
+      streetViewService.getPanoramaByLocation(marker.position, radius, getStreetView);
+      // Open the infowindow on the correct marker.
+      infowindow.open(map, marker);
 
-      // This function takes in a COLOR, and then creates a new marker
-      // icon of that color. The icon will be 21 px wide by 34 high, have an origin
-      // of 0, 0 and be anchored at 10, 34).
-      function makeMarkerIcon(markerColor) {
-        var markerImage = new google.maps.MarkerImage(
-          'http://chart.googleapis.com/chart?chst=d_map_spin&chld=1.15|0|'+ markerColor +
-          '|40|_|%E2%80%A2',
-          new google.maps.Size(21, 34),
-          new google.maps.Point(0, 0),
-          new google.maps.Point(10, 34),
-          new google.maps.Size(21,34));
-        return markerImage;
-      }
+       
+    }
+  }
+  
+  // This function will loop through the markers array and display them all.
+  function showAllParks() {
+    var bounds = new google.maps.LatLngBounds();
+    // Extend the boundaries of the map for each marker and display the marker
+    for (var i = 0; i < markers.length; i++) {
+      markers[i].setMap(map);
+      bounds.extend(markers[i].position);
+    }
+    map.fitBounds(bounds);
+    
+  }
+
+  // This function will loop through the parks and hide them all.
+  function hideParks() {
+    for (var i = 0; i < markers.length; i++) {
+      markers[i].setMap(null);
+    }
+    
+  }
+   
+  /*
+  Using dropdown list as the filter
+  Returns a list of locations for each "state"
+  The FILTERED list will be shown in the 2nd dropdown list.
+  */
+  function showLocationList(state) {
+    filteredlocations = [];
+    for (var i = 0; i < locations.length; i++) {
+      if (state == "All States" || state == locations[i].state) {
+         filteredlocations.push(locations[i].title);
+      }   
+    }
+    return (filteredlocations.length===0)?['No Travelling Park Available']:filteredlocations;
+  }
+  
+  /* PART 1: FILTERING
+  Showing makers based on search string "state"
+  Setting map without calling search API
+  UI : 2nd dropdown list changes accordingly 
+  */
+  function showStateParks(state) {
+    if (state == "All States"){
+      showAllParks();
+    } else {
+    hideParks();
+    filteredmarkers = [];
+    //apply filter and show markers
+    for (var i = 0; i < markers.length; i++) {
+          if (markers[i].state == state)  {
+            markers[i].setMap(map);
+            filteredmarkers.push(markers[i]);
+          } 
+    }
+    
+     
+    /* PART 2: CENTER AND ZOOM IN 
+    Below code is not part of the filter,
+    Code is provided for better user experience.
+    1. It searches the state location using GEOCODE,
+       And simply center it and zoom in. 
+    2. It does not handle any filtering and markers.
+    3. It handles when a state has NO markers
+    */
+    geostring = state + ", US" ;
+    geocoder.geocode({'address': geostring}, function(results, status) {
+      if (status === 'OK') {
+        statelocation = results[0].geometry.location;
+        var statebounds = new google.maps.LatLngBounds(statelocation); 
+        statebounds.extend(statelocation); 
+        map.setCenter(statelocation);
+        map.fitBounds(statebounds);
+        map.setZoom(6);
+      } else {
+          alert('Geocode Error Status: ' + status);
+        }
+      });
+    }
+  }
+
+ 
+  // Make marker and color setting
+  function makeMarkerIcon(markerColor) {
+    var markerImage = new google.maps.MarkerImage(
+      'http://chart.googleapis.com/chart?chst=d_map_spin&chld=1.15|0|'+ markerColor +
+      '|40|_|%E2%80%A2',
+      new google.maps.Size(21, 34),
+      new google.maps.Point(0, 0),
+      new google.maps.Point(10, 34),
+      new google.maps.Size(21,34));
+    return markerImage;
+  }
       
 var states = [ "All States",
                       "AK",
@@ -444,6 +457,9 @@ function findMarker(markers, location){
   }
 }
 
+function mapError(){
+  alert('Google Map Error: Check your connectivity and try again');
+}
 
 var ViewModel = function(){
     this.stateList = ko.observableArray(states);
@@ -465,7 +481,7 @@ var ViewModel = function(){
     }, this);
     
     this.selectedLocation.subscribe(function(location) {        
-        findMarker(displaymarkers, (location+""));
+        findMarker(filteredmarkers, (location+""));
     }, this);
     
 };    

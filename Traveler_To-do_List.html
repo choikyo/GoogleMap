@@ -9,7 +9,7 @@
   <body>
     <div class="container">
       <div class="options-box">
-        <h1>Traveller To-do List</h1>
+        <h1>Traveller To-do List</h1>  
         <div>
           Search in state:
           <select id="statelist" data-bind="options: stateList, value: selectedState"></select>
@@ -30,7 +30,9 @@
     <script src="scripts\mapscript.js"></script>
     <script async defer
         src=
-        "https://maps.googleapis.com/maps/api/js?libraries=geometry&key=AIzaSyDZFr-SoQu9I_u6Tu54ktxtztQMae81F4M&v=3&callback=initMap">
+        "https://maps.googleapis.com/maps/api/js?libraries=geometry&key=AIzaSyDZFr-SoQu9I_u6Tu54ktxtztQMae81F4M&v=3&callback=initMap"
+        onerror="mapError();">
+        
     </script>    
   </body>
 </html>
