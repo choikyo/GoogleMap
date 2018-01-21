@@ -312,7 +312,7 @@
       } else {
           alert('Geocode Error Status: ' + status);
         }
-      });
+      }); //END OF PART 2 
     }
   }
 
@@ -476,12 +476,27 @@ var ViewModel = function(){
     this.hideParks = hideParks;
     
     this.selectedState.subscribe(function(state) {        
-        //IMPORTANT: function parameter should be newstate+"", or its value includes "Object Event"
-        showStateParks(state+"");
+      //IMPORTANT: function parameter should be newstate+"", or its value includes "Object Event"
+      showStateParks(state+"");
     }, this);
     
     this.selectedLocation.subscribe(function(location) {        
-        findMarker(filteredmarkers, (location+""));
+      findMarker(filteredmarkers, (location+""));
+    }, this);
+    
+    this.numberOfClicks = ko.observable(0);
+   
+    this.registerClick = function(){
+      this.numberOfClicks(this.numberOfClicks() + 1);
+      //alert(this.numberOfClicks( ));       
+    };
+    
+    this.clickToggle = ko.computed(function() {
+        return (this.numberOfClicks() % 2 ===1)||(this.numberOfClicks()===0);
+    }, this);
+    
+    this.showMap = ko.computed(function() {
+        return this.numberOfClicks() % 2 ===0;
     }, this);
     
 };    

@@ -3,12 +3,17 @@
   <head>
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <link rel="stylesheet" href="./css/bootstrap.min.css">
     <link rel="stylesheet" href="css/style.css">
     <title>Traveler To-do List</title>
   </head>
   <body>
     <div class="container">
-      <div class="options-box">
+      <div class="hamburger" data-bind="click: registerClick">&#9776;
+        <input type="hidden" value="0" data-bind="text: numberOfClicks">
+      </div>
+      
+      <div class="options-box" data-bind="visible:clickToggle">
         <h1>Traveller To-do List</h1>  
         <div>
           Search in state:
@@ -23,7 +28,8 @@
         </div>
         <div id="panoview" ></div>
       </div>
-      <div id="map"></div>
+     
+      <div id="map" data-bind="visible: showMap"></div>
     </div>
     <script src="knockout.js\knockout-3.4.2.js"></script>
     <script src="jquery\jquery-3.2.1.min.js"></script>
