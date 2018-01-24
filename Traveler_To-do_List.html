@@ -8,28 +8,18 @@
     <title>Traveler To-do List</title>
   </head>
   <body>
-    <div class="container">
-      <div class="hamburger" data-bind="click: registerClick">&#9776;
-        <input type="hidden" value="0" data-bind="text: numberOfClicks">
-      </div>
-      
-      <div class="options-box" data-bind="visible:clickToggle">
+    <div class="container"> 
+      <div class="options-box" data-bind="">
         <h1>Traveller To-do List</h1>  
         <div>
           Search in state:
           <select id="statelist" data-bind="options: stateList, value: selectedState"></select>
         </div>
-        <div>
-          <input id="show-all-parks" type="button" value="Show All Parks" data-bind="click: showAllParks">
-          <input id="hide-parks" type="button" value="Hide Parks" data-bind="click: hideParks">
-        </div>
         <div id="places">
-          <select  data-bind="options: locationNames, value: selectedLocation, optionsCaption: '---Choose a park---'"  id="place-list" ></select>            
+          <select size="5" data-bind="options: locationNames, value: selectedLocation, optionsCaption: '---Choose a park---'"  id="place-list" ></select>            
         </div>
-        <div id="panoview" ></div>
       </div>
-     
-      <div id="map" data-bind="visible: showMap"></div>
+      <div id="map" ></div>
     </div>
     <script src="knockout.js\knockout-3.4.2.js"></script>
     <script src="jquery\jquery-3.2.1.min.js"></script>

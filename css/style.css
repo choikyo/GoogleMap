@@ -1,17 +1,11 @@
-/* Styles */
-    html,
+html,
     body {
         font-family: Arial, sans-serif;
         height: 100%;
         margin: 0;
         padding: 0;
     }
-    .hamburger {
-        overflow: hidden;
-        background-color: #fff;
-        display: none;
-        height: 0;
-    }
+    
     .container {
         width: 95%;
         height: 100%;
@@ -35,6 +29,7 @@
     }
 
     #map {
+         
         bottom:0px;
         height: 100%;
         width: 60%;
@@ -44,69 +39,70 @@
     }
 
     .options-box {
-         
-        border: 1px solid #999;
-        border-radius: 3px;
+        
+        background: #fff;
+        color: #000; 
         height: 100%;
         line-height: 35px;
         padding: 10px 10px 30px 10px;
         text-align: left; 
         width: 30%;
     }
-      
-    #panoview {
-        width: 80%;
-        height: 50%;
+ 
+    #streetpano {
+        width: 200px;       
+        height: 200px;
     }
 
     .text {
         font-size: 12px;
     }
-
-
-
-/* Smartphones (portrait and landscape) ----------- */
-@media only screen and (min-device-width : 320px) and (max-device-width : 480px) {
-/* Styles */
-}
-
-/* Smartphones (landscape) ----------- */
-@media only screen and (min-width : 321px) {
-/* Styles */
-}
-
-/* Smartphones (portrait) ----------- */
-@media only screen and (max-width : 320px) {
-/* Styles */
-}
-
-/* iPads (portrait and landscape) ----------- */
+    
+    #nostreetpano{
+        color:#ffa500;
+    }
+    div.infowindow {
+        max-height:250px;
+        overflow-y:auto;
+    }
+    
+    #place-list {
+        size: auto;    
+    }
+    
  
-
-/* iPads (landscape) ----------- */
-@media only screen and   (max-device-width : 1025px)  {
+/* iPads (portrait and landscape) ----------- */
+@media only screen and  (max-device-width : 1024px) {
     .container{
         width:98%;
         position:relative;
     }
-    .options-box {
-        
-        width:100%;
+    .options-box {        
+        width:98%;
+        height: 30%;
     }
     
     #map {
-        width: 100%;
-        left: 0%;
-        height:97%;
+        top: 30%;
+        width: 96%;
+        left: 1%;
+        height:70%;
     }
     
     .hamburger {
         display: inline;
     }
-     
 }
 
+/* iPads (landscape) ----------- */
+@media only screen and (min-device-width : 768px) and (max-device-width : 1024px) and (orientation : landscape) {
+/* Styles */
+}
 
+/* iPads (portrait) ----------- */
+@media only screen and (min-device-width : 768px) and (max-device-width : 1024px) and (orientation : portrait) {
+/* Styles */
+}
 /**********
 iPad 3
 **********/
@@ -118,9 +114,14 @@ iPad 3
 /* Styles */
 }
 /* Desktops and laptops ----------- */
-@media  screen  and (min-width : 1024) { 
+@media only screen  and (min-width : 1224px) {
+/* Styles */
 }
 
+/* Large screens ----------- */
+@media only screen  and (min-width : 1824px) {
+/* Styles */
+}
 
 /* iPhone 4 ----------- */
 @media only screen and (min-device-width : 320px) and (max-device-width : 480px) and (orientation : landscape) and (-webkit-min-device-pixel-ratio : 2) {

@@ -5,6 +5,8 @@
   var markers = [];
   var filteredmarkers = [];
   var selectedmarker = null;
+  var bounds;
+
   
   function initMap() {
     // Create a styles array to use with the map.
@@ -139,44 +141,66 @@
   }
   
   //Ajax call to OpenWeatherMap
-  function getWeather(infowindow,streeviewstring, marker){
+  function getWeather(infowindow, marker){
     var position = marker.position;
     var cords = (position+"").split(", ");
     var lat = cords[0].replace("(", "");
     var lng = cords[1].replace(")", "");
-    var data;
+    //var data;
+    //var infodata = infowindow.getContent();
     //var weatherstr;
     url = "http://api.openweathermap.org/data/2.5/weather?APPID=b36dbbebc9c8e656a80fb8c68f6ec353&" +
     "lat=" + lat + "&" + "lon=" + lng;
     
-    $.ajax({
-        url: url,
-        type: "GET",
-        dataType: 'json',
-        data : data,
-        //Keep async false to return correct Weather API result
-        async: true,
-        success: function(data){
-        //Temperature unit is Kelvin, needs to convert to F or C
-        //F = 9/5 (K - 273) + 32
-        //C = K - 273
-        temp = ((data.main.temp-273)*9/5+32).toFixed(1);
-        weather = data.weather[0].main;
-        infowindow.setContent('<div>' + marker.title + '</div>' +
-                              streeviewstring +
-                              '<div id="weather-info">Weather: ' + weather + '</div>' +
-                              '<div id="temperature-info">Temperature: ' + temp + 'F </div>'
-                              );
-        panorama.setVisible(true);
-        },
-        error: function(){
-          infowindow.setContent('<div>' + marker.title + '</div>' +
-                                streeviewstring +
-                                'Weather Info Not Available'
-                              );
-        panorama.setVisible(false);
-        }
-      });
+    $.getJSON(url).done(function(data){
+      //Temperature unit is Kelvin, needs to convert to F or C
+      //F = 9/5 (K - 273) + 32
+      //C = K - 273
+      temp = ((data.main.temp-273)*9/5+32).toFixed(1);
+      weather = data.weather[0].main;
+      infowindow.setContent('<div>' + marker.title + '</div>' +
+                            '<div id="weather-info">Weather: ' + weather + '</div>' +
+                            '<div id="temperature-info">Temperature: ' + temp + 'F </div>' +
+                            '<div id="nostreetview"></div>' +
+                            '<div id="streetpano"></div>');
+       var streetViewService = new google.maps.StreetViewService();
+       var radius = 50;
+  
+      var getStreetView = function(){};
+      getStreetView = function(data, status) {
+          //var weatherData = getWeather(marker.position);
+          if (status == google.maps.StreetViewStatus.OK) {            
+            var nearStreetViewLocation = data.location.latLng;
+            var heading = google.maps.geometry.spherical.computeHeading(
+              nearStreetViewLocation, marker.position);
+              var panoramaOptions = {
+                position: nearStreetViewLocation,
+                pov: {
+                  heading: heading,
+                  pitch: 30
+                }
+              };             
+            panorama = new google.maps.StreetViewPanorama(
+            document.getElementById("streetpano"), panoramaOptions);  
+          } else {
+            infowindow.setContent(infowindow.getContent().replace('<div id="nostreetview"></div>','<div id="nostreetpano">No Street View</div>'));
+            panorama = new google.maps.StreetViewPanorama(
+            document.getElementById("streetpano"), null); 
+          }
+        };
+        // Use streetview service to get the closest streetview image within
+        // 50 meters of the markers position
+        
+        streetViewService.getPanoramaByLocation(marker.position, radius, getStreetView);
+        // Open the infowindow on the correct marker.
+        infowindow.open(map, marker);
+    }).fail(function(){
+      infowindow.setContent('<div>' + marker.title + '</div>' +
+                            '<div id="weather-info">Weather Data Not Available</div>' +
+                            '<div id="streetpano"></div>');
+    });
+    
+    
   }
 
    
@@ -185,53 +209,16 @@
   // on that markers position.
   function populateInfoWindow(marker, infowindow) { 
     // Check to make sure the infowindow is not already opened on this marker.
-    var getStreetView = function(){};
+     
     if (infowindow.marker != marker) {
-      // Clear the infowindow content to give the streetview time to load.
-      infowindow.setContent('');
-      infowindow.marker = marker;
-      // Make sure the marker property is cleared if the infowindow is closed.
-      infowindow.addListener('closeclick', function() {
+        infowindow.setContent('');
+        infowindow.marker = marker;
+        infowindow.addListener('closeclick', function() {
         infowindow.marker = null;
-      });
-      var streetViewService = new google.maps.StreetViewService();
-      var radius = 50;
-      // In case the status is OK, which means the pano was found, compute the
-      // position of the streetview image, then calculate the heading, then get a
-      // panorama from that and set the options
-       
-      getStreetView = function(data, status) {
-        //var weatherData = getWeather(marker.position);
-        if (status == google.maps.StreetViewStatus.OK) {
-          var nearStreetViewLocation = data.location.latLng;
-          var heading = google.maps.geometry.spherical.computeHeading(
-            nearStreetViewLocation, marker.position);
-            //infowindow.setContent('<div>' + marker.title + '</div>' +
-            //                      weatherData);
-            
-            ViewModel(marker.title);
-            var panoramaOptions = {
-              position: nearStreetViewLocation,
-              pov: {
-                heading: heading,
-                pitch: 30
-              }
-            };
-             
-           panorama = new google.maps.StreetViewPanorama(
-            document.getElementById("panoview"), panoramaOptions);
-          getWeather(infowindow,"", marker);
-        } else {
-          panorama = new google.maps.StreetViewPanorama(
-            document.getElementById("panoview"), null);
-          getWeather(infowindow,"<div>No Street View Found</div>",marker);
-        }
-      };
-      // Use streetview service to get the closest streetview image within
-      // 50 meters of the markers position
-      streetViewService.getPanoramaByLocation(marker.position, radius, getStreetView);
-      // Open the infowindow on the correct marker.
-      infowindow.open(map, marker);
+        });      
+      
+      getWeather(infowindow, marker); 
+ 
 
        
     }
@@ -239,14 +226,15 @@
   
   // This function will loop through the markers array and display them all.
   function showAllParks() {
-    var bounds = new google.maps.LatLngBounds();
+    bounds = new google.maps.LatLngBounds();
     // Extend the boundaries of the map for each marker and display the marker
+    map.setCenter({lat: 39.8283, lng: -98.5795});
     for (var i = 0; i < markers.length; i++) {
       markers[i].setMap(map);
       bounds.extend(markers[i].position);
     }
     map.fitBounds(bounds);
-    
+    map.setZoom(3);
   }
 
   // This function will loop through the parks and hide them all.
@@ -279,40 +267,41 @@
   */
   function showStateParks(state) {
     if (state == "All States"){
+      hideParks();
       showAllParks();
     } else {
-    hideParks();
-    filteredmarkers = [];
-    //apply filter and show markers
-    for (var i = 0; i < markers.length; i++) {
-          if (markers[i].state == state)  {
-            markers[i].setMap(map);
-            filteredmarkers.push(markers[i]);
-          } 
-    }
-    
-     
-    /* PART 2: CENTER AND ZOOM IN 
-    Below code is not part of the filter,
-    Code is provided for better user experience.
-    1. It searches the state location using GEOCODE,
-       And simply center it and zoom in. 
-    2. It does not handle any filtering and markers.
-    3. It handles when a state has NO markers
-    */
-    geostring = state + ", US" ;
-    geocoder.geocode({'address': geostring}, function(results, status) {
-      if (status === 'OK') {
-        statelocation = results[0].geometry.location;
-        var statebounds = new google.maps.LatLngBounds(statelocation); 
-        statebounds.extend(statelocation); 
-        map.setCenter(statelocation);
-        map.fitBounds(statebounds);
-        map.setZoom(6);
-      } else {
-          alert('Geocode Error Status: ' + status);
-        }
-      }); //END OF PART 2 
+      hideParks();
+      filteredmarkers = [];
+      //apply filter and show markers
+      for (var i = 0; i < markers.length; i++) {
+            if (markers[i].state == state)  {
+              markers[i].setMap(map);
+              filteredmarkers.push(markers[i]);
+            } 
+      }
+      
+       
+      /* PART 2: CENTER AND ZOOM IN 
+      Below code is not part of the filter,
+      Code is provided for better user experience.
+      1. It searches the state location using GEOCODE,
+         And simply center it and zoom in. 
+      2. It does not handle any filtering and markers.
+      3. It handles when a state has NO markers
+      */
+      geostring = state + ", US" ;
+      geocoder.geocode({'address': geostring}, function(results, status) {
+        if (status === 'OK') {
+          statelocation = results[0].geometry.location;
+          var statebounds = new google.maps.LatLngBounds(statelocation); 
+          statebounds.extend(statelocation); 
+          map.setCenter(statelocation);
+          map.fitBounds(statebounds);
+          map.setZoom(6);
+        } else {
+            alert('Geocode Error Status: ' + status);
+          }
+        }); //END OF PART 2 
     }
   }
 
@@ -409,7 +398,6 @@ var locations = [
           {title: 'Ruffner Mountain Nature Center', location: { lat:33.55899 , lng: -86.707016 }, state: 'AL'},
           {title: 'Kings Mountain State Park', location: { lat:35.130459 , lng: -81.345444 }, state: 'SC'},
           {title: 'North Maine Woods', location: { lat:46.867702 , lng: -69.480286 }, state: 'ME'},
-          {title: 'Honolulu Watershed Forest Preserve', location: { lat:21.363251 , lng: -157.781265 }, state: 'HI'},
           {title: 'Oleta River State Park', location: { lat:25.921614 , lng: -80.144402 }, state: 'FL'},
           {title: 'Grant Park', location: { lat:41.876465 , lng: -87.621887 }, state: 'IL'},
           {title: 'Bridge Creek Wildlife Area', location: { lat:45.043449 , lng: -118.949318 }, state: 'OR'},
@@ -424,9 +412,7 @@ var locations = [
           {title: 'Shenandoah National Park', location: { lat:38.700516 , lng: -78.292694 }, state: 'VA'},
           {title: 'Ricketts Glen State Park', location: { lat:41.339184 , lng: -76.290436 }, state: 'PA'},
           {title: 'El Dorado State Park', location: { lat:37.866047 , lng: -96.756935 }, state: 'KS'},
-          {title: 'Polihale State Park', location: { lat:22.079357 , lng: -159.761642 }, state: 'HI'},
           {title: 'Lake Wateree State Recreation Area', location: { lat:34.375179 , lng: -80.863495 }, state: 'NC'},
-          {title: 'Kekaha Kai State Park', location: { lat:19.788027 , lng: -156.023453 }, state: 'HI'},
           {title: 'National Bison Range', location: { lat:47.342545 , lng: -114.209747 }, state: 'MT'},
           {title: 'Hillman State Park', location: { lat:40.453739 , lng: -80.400864 }, state: 'PA'},
           {title: 'Little Big Econ State Forest', location: { lat:28.673721 , lng: -81.104507 }, state: 'FL'},
@@ -484,20 +470,6 @@ var ViewModel = function(){
       findMarker(filteredmarkers, (location+""));
     }, this);
     
-    this.numberOfClicks = ko.observable(0);
-   
-    this.registerClick = function(){
-      this.numberOfClicks(this.numberOfClicks() + 1);
-      //alert(this.numberOfClicks( ));       
-    };
-    
-    this.clickToggle = ko.computed(function() {
-        return (this.numberOfClicks() % 2 ===1)||(this.numberOfClicks()===0);
-    }, this);
-    
-    this.showMap = ko.computed(function() {
-        return this.numberOfClicks() % 2 ===0;
-    }, this);
-    
+
 };    
 ko.applyBindings(new ViewModel());
