@@ -151,23 +151,10 @@
     //var weatherstr;
     url = "http://api.openweathermap.org/data/2.5/weather?APPID=b36dbbebc9c8e656a80fb8c68f6ec353&" +
     "lat=" + lat + "&" + "lon=" + lng;
-    
-    $.getJSON(url).done(function(data){
-      //Temperature unit is Kelvin, needs to convert to F or C
-      //F = 9/5 (K - 273) + 32
-      //C = K - 273
-      temp = ((data.main.temp-273)*9/5+32).toFixed(1);
-      weather = data.weather[0].main;
-      infowindow.setContent('<div>' + marker.title + '</div>' +
-                            '<div id="weather-info">Weather: ' + weather + '</div>' +
-                            '<div id="temperature-info">Temperature: ' + temp + 'F </div>' +
-                            '<div id="nostreetview"></div>' +
-                            '<div id="streetpano"></div>');
-       var streetViewService = new google.maps.StreetViewService();
-       var radius = 50;
-  
-      var getStreetView = function(){};
-      getStreetView = function(data, status) {
+    var getStreetView = function(){};
+    var streetViewService = new google.maps.StreetViewService();
+    var radius = 50;
+    getStreetView = function(data, status) {
           //var weatherData = getWeather(marker.position);
           if (status == google.maps.StreetViewStatus.OK) {            
             var nearStreetViewLocation = data.location.latLng;
@@ -187,17 +174,32 @@
             panorama = new google.maps.StreetViewPanorama(
             document.getElementById("streetpano"), null); 
           }
-        };
-        // Use streetview service to get the closest streetview image within
-        // 50 meters of the markers position
-        
-        streetViewService.getPanoramaByLocation(marker.position, radius, getStreetView);
-        // Open the infowindow on the correct marker.
-        infowindow.open(map, marker);
-    }).fail(function(){
+    };
+    
+    $.getJSON(url).done(function(data){
+      //Temperature unit is Kelvin, needs to convert to F or C
+      //F = 9/5 (K - 273) + 32
+      //C = K - 273
+      temp = ((data.main.temp-273)*9/5+32).toFixed(1);
+      weather = data.weather[0].main;
       infowindow.setContent('<div>' + marker.title + '</div>' +
-                            '<div id="weather-info">Weather Data Not Available</div>' +
+                            '<div id="weather-info">Weather: ' + weather + '</div>' +
+                            '<div id="temperature-info">Temperature: ' + temp + 'F </div>' +
+                            '<div id="nostreetview"></div>' +
                             '<div id="streetpano"></div>');
+
+        
+      streetViewService.getPanoramaByLocation(marker.position, radius, getStreetView);
+        // Open the infowindow on the correct marker.
+      infowindow.open(map, marker);
+    }).fail(function(){
+       //Handles Weather API ERROR in infowindow.
+      infowindow.setContent('<div>' + marker.title + '</div>' +
+                            '<div id="weather-error">Weather Data Not Available</div>' +
+                            '<div id="nostreetview"></div>' +
+                            '<div id="streetpano"></div>');
+      streetViewService.getPanoramaByLocation(marker.position, radius, getStreetView);
+      infowindow.open(map, marker);
     });
     
     
@@ -470,6 +472,10 @@ var ViewModel = function(){
       findMarker(filteredmarkers, (location+""));
     }, this);
     
+    this.ifVisible = ko.computed(function(){
+      var statechoice = this.selectedState();
+      return (statechoice=="All States")?false:true ;       
+    },this);
 
 };    
 ko.applyBindings(new ViewModel());

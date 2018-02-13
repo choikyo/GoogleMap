@@ -2,8 +2,7 @@
 <html>
   <head>
     <meta charset="utf-8"/>
-    <meta name="viewport" content="width=device-width,initial-scale=1"/>
-    <link rel="stylesheet" href="./css/bootstrap.min.css">
+    <meta name="viewport" content="width=device-width,initial-scale=1"/>     
     <link rel="stylesheet" href="css/style.css">
     <title>Traveler To-do List</title>
   </head>
@@ -16,7 +15,7 @@
           <select id="statelist" data-bind="options: stateList, value: selectedState"></select>
         </div>
         <div id="places">
-          <select size="5" data-bind="options: locationNames, value: selectedLocation, optionsCaption: '---Choose a park---'"  id="place-list" ></select>            
+          <select size="5" data-bind="visible: ifVisible, options: locationNames, value: selectedLocation, optionsCaption: '---Choose a park---'"  id="place-list" ></select>            
         </div>
       </div>
       <div id="map" ></div>
