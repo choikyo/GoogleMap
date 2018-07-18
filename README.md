@@ -1,4 +1,4 @@
-# Project: Traveler To-do List
+# Project: Travelers To-do List
 This project is a single page web application that shows a selected list of beatiful national parks and forests in United States
 
 ## Installation
